@@ -21,7 +21,6 @@ class User(AbstractUser):
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
-        null=True,
         unique=True
     )
     '''Добавляем поле role с выбором из предустановленных по ТЗ'''
