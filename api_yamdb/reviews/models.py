@@ -87,7 +87,6 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
-        on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
@@ -148,7 +147,7 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews',
+        related_name='review_comments',
     )
     pub_date = models.DateTimeField(auto_now_add=True)
 
