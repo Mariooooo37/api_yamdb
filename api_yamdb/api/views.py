@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -13,7 +13,10 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAdminModeratorOwnerOrReadOnly)
-from .serializers import (RegisterDataSerializer, TokenSerializer)
+from .serializers import RegisterDataSerializer, TokenSerializer
+from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from .serializers import ReviewSerializer, CommentSerializer
+
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
@@ -53,3 +56,61 @@ def get_jwt_token(request):
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CategoryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    # Пермишены
+
+
+class GenreViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    # Пермишены
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    # Пермишены
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        return title.reviews
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer.save(
+            title=title,
+            author=self.request.user,
+        )
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Title, id=review_id)
+        return review.comments
+
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Title, id=review_id)
+        serializer.save(
+            review=review,
+            author=self.request.user,
+        )

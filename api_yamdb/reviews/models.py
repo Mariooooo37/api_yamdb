@@ -86,10 +86,9 @@ class Title(models.Model):
     description = models.TextField(null=True, blank=True)
     genre = models.ManyToManyField(
         Genre,
-        through='GenreTitle'
-#        on_delete=models.SET_NULL,
-#        null=True,
-#        blank=True,
+        through='GenreTitle',
+        null=True,
+        blank=True,
     )
     category = models.ForeignKey(
         Category,
@@ -148,7 +147,7 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews2',
+        related_name='review_comments',
     )
     pub_date = models.DateTimeField(auto_now_add=True)
 
