@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import CategoryViewSet, GenreViewSet, TitleViewSet
-from .views import ReviewViewSet, CommentViewSet
+from .views import ReviewViewSet, CommentViewSet, UserViewSet
 from .views import get_jwt_token, register
 
 router = DefaultRouter()
@@ -20,6 +20,7 @@ v1_router.register(
     CommentViewSet,
     basename='comments',
 )
+v1_router.register(r"users", UserViewSet)
 
 app_name = 'api'
 
