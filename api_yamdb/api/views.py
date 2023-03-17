@@ -14,8 +14,11 @@ from reviews.models import Category, Genre, Review, Title, User
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAdminModeratorOwnerOrReadOnly)
 from .serializers import RegisterDataSerializer, TokenSerializer
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from .serializers import CategorySerializer, GenreSerializer
+from .serializers import TitleReadSerializer, TitleWriteSerializer
 from .serializers import ReviewSerializer, CommentSerializer
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsAdminModeratorOwnerOrReadOnly)
 
 
 @api_view(["POST"])
@@ -64,7 +67,7 @@ class CategoryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
-    # Пермишены
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenreViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
@@ -73,13 +76,17 @@ class GenreViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
     serializer_class = GenreSerializer
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
-    # Пермишены
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-    # Пермишены
+    permission_classes = (IsAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

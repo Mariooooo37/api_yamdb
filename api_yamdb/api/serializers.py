@@ -1,3 +1,5 @@
+import datetime as dt
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -37,17 +39,45 @@ class TokenSerializer(serializers.Serializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
+        fields = ('name', 'slug')
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
         fields = '__all__'
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    # валидаторы, поля
+class TitleWriteSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True,
+        required=False,
+    )
+    rating = serializers.IntegerField(read_only=True)
+
+    def validate_year(self, value):
+        year = dt.date.today().year
+        if value > year:
+            raise serializers.ValidationError(
+                'Год выпуска не может быть больше текущего года!')
+        return value
+
     class Meta:
         model = Title
         fields = '__all__'
