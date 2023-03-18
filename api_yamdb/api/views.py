@@ -1,7 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status, viewsets, mixins
+from rest_framework import permissions, status, viewsets, mixins, filters
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -61,6 +61,9 @@ class CategoryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('name',)
+    ordering = ('name')
     permission_classes = (IsAdminOrReadOnly,)
 
 
@@ -70,12 +73,17 @@ class GenreViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
     serializer_class = GenreSerializer
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('name',)
+    ordering = ('name')
     permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.OrderingFilter,)
+    ordering = ('name')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
@@ -149,4 +157,3 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
