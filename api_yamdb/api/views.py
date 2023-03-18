@@ -6,11 +6,13 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, User
 from .permissions import IsAdminOrReadOnly, IsAdmin
-from .serializers import RegisterDataSerializer, TokenSerializer, UserSerializer
-from .serializers import CategorySerializer, GenreSerializer, UserEditSerializer
+from .serializers import RegisterDataSerializer, TokenSerializer
+from .serializers import UserSerializer, CategorySerializer
+from .serializers import GenreSerializer, UserEditSerializer
 from .serializers import TitleReadSerializer, TitleWriteSerializer
 from .serializers import ReviewSerializer, CommentSerializer
 
@@ -82,7 +84,8 @@ class GenreViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.OrderingFilter, DjangoFilterBackend)
+    # filterset_fields = ('genre',)
     ordering = ('name')
 
     def get_serializer_class(self):
