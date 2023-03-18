@@ -1,7 +1,7 @@
 import datetime as dt
 
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
@@ -55,6 +55,12 @@ class TitleReadSerializer(serializers.ModelSerializer):
         model = Title
         fields = '__all__'
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['rating'] = (representation['rating']
+                                    if representation['rating'] else None)
+        return representation
+
 
 class TitleWriteSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
@@ -82,13 +88,39 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault(),
+    )
+    title = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='name',
+        default=1,
+        # надо понять, как передавать сюда значение из запроса
+    )
 
     class Meta:
         model = Review
         fields = '__all__'
 
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('title', 'author')
+            )
+        ]
+
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+    )
+    review = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='id',
+    )
 
     class Meta:
         model = Comment
