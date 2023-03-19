@@ -2,6 +2,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets, mixins, filters
+from rest_framework import serializers
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -16,6 +17,7 @@ from .serializers import UserSerializer, CategorySerializer
 from .serializers import GenreSerializer, UserEditSerializer
 from .serializers import TitleReadSerializer, TitleWriteSerializer
 from .serializers import ReviewSerializer, CommentSerializer
+from .filters import TitleFilter
 
 
 @api_view(["POST"])
@@ -86,7 +88,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.OrderingFilter, DjangoFilterBackend)
-    filtrset_fields = ('genre__slug',)
+    filterset_class = TitleFilter
     ordering = ('name')
 
     def get_serializer_class(self):
@@ -109,6 +111,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
+        if Review.objects.filter(title=title,
+                                 author=self.request.user).exists():
+            raise serializers.ValidationError(
+                'Нельзя отставить два отзыва на произведение!')
         serializer.save(
             title=title,
             author=self.request.user,

@@ -100,6 +100,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         # надо понять, как передавать сюда значение из запроса
     )
 
+    def validate_score(self, value):
+        if not (0 <= value <= 10):
+            raise serializers.ValidationError('Оценка не по 10-бальной шкале!')
+        return value
+
     class Meta:
         model = Review
         fields = '__all__'
