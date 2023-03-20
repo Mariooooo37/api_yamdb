@@ -1,7 +1,7 @@
 import datetime as dt
 
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
+from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
@@ -91,13 +91,16 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
-        default=serializers.CurrentUserDefault(),
     )
     title = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name',
-        default=1,
-        # надо понять, как передавать сюда значение из запроса
+        # убрал дефолтные значения для author и title, по идее, мы их должны
+        # прописывать, только если у нас есть кастомная валидация по этим полям
+        # в сериализаторе.
+        # а обычную валидацию из коробки оно пройдет, т.к. read_only они оба
+        # а вьюха значения этих полей уже подсунет после валидации
+        # короче, по сути я валидацию перенес во вьюху для Review, глянь там
     )
 
     def validate_score(self, value):
@@ -108,13 +111,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
-
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('title', 'author')
-            )
-        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):

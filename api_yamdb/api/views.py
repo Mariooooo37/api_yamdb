@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
 
 from reviews.models import Category, Genre, Title, User, Review
 from .permissions import IsAdminOrReadOnly, IsAdmin
@@ -119,6 +120,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
             title=title,
             author=self.request.user,
         )
+        avg_rating = title.reviews.aggregate(Avg('score'))
+        title.rating = avg_rating['score__avg']
+        title.save()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
