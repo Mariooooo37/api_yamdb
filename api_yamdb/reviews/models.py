@@ -12,19 +12,16 @@ class User(AbstractUser):
         (MODERATOR, 'Moderator'),
         (USER, 'User'),
     ]
-    
     email = models.EmailField(
         max_length=254,
         verbose_name='Адрес электронной почты',
         unique=True,
     )
-    
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
         unique=True,
     )
-    
     role = models.CharField(
         verbose_name='Роль',
         max_length=50,
@@ -47,7 +44,6 @@ class User(AbstractUser):
         return self.role == self.ADMIN
 
     USERNAME_FIELD = 'email'
-    
     REQUIRED_FIELDS = ['username']
 
     class Meta:
