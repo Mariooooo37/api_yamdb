@@ -168,6 +168,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserEditSerializer(serializers.ModelSerializer):
+
+    def validate_username(self, value):
+        if value.lower() == "me":
+            raise serializers.ValidationError("Username 'me' is not valid")
+        if not re.match(r'^[\w.@+-]+\Z', value):
+            raise ValidationError(
+                'Имя пользователя содержит запрещенные символы'
+            )
+        return value
+    
+    
     class Meta:
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
