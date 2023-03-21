@@ -12,18 +12,19 @@ class User(AbstractUser):
         (MODERATOR, 'Moderator'),
         (USER, 'User'),
     ]
-    '''Переопределяем поле email как уникальное'''
+    
     email = models.EmailField(
+        max_length=254,
         verbose_name='Адрес электронной почты',
         unique=True,
     )
-    '''Переопределяем поле username как уникальное'''
+    
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
-        unique=True
+        unique=True,
     )
-    '''Добавляем поле role с выбором из предустановленных по ТЗ'''
+    
     role = models.CharField(
         verbose_name='Роль',
         max_length=50,
@@ -45,9 +46,8 @@ class User(AbstractUser):
     def is_admin(self):
         return self.role == self.ADMIN
 
-    '''Описываем поле уникального идентификатора'''
     USERNAME_FIELD = 'email'
-    '''Описываем дополнительное запрашиваемое поле по ТЗ'''
+    
     REQUIRED_FIELDS = ['username']
 
     class Meta:

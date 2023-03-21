@@ -46,7 +46,7 @@ def get_jwt_token(request):
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
         User,
-        username=serializer.validated_data["username"]
+        username=serializer.validated_data['username']
     )
 
     if default_token_generator.check_token(
@@ -136,11 +136,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    lookup_field = "username"
+    lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    search_fields = ('username',)
 
     @action(
         methods=[
@@ -148,7 +150,7 @@ class UserViewSet(viewsets.ModelViewSet):
             "patch",
         ],
         detail=False,
-        url_path="me",
+        url_path='me',
         permission_classes=[permissions.IsAuthenticated],
         serializer_class=UserEditSerializer,
     )

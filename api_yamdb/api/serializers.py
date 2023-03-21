@@ -1,4 +1,6 @@
 import datetime as dt
+import re
+from django.forms import ValidationError
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
@@ -9,11 +11,13 @@ from reviews.models import Category, Genre, Title, Review, Comment, User
 
 class RegisterDataSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
+        max_length=150,
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
@@ -22,6 +26,10 @@ class RegisterDataSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value.lower() == "me":
             raise serializers.ValidationError("Username 'me' is not valid")
+        if not re.match(r'^[\w.@+-]+\Z', value):
+            raise ValidationError(
+                'Имя пользователя содержит запрещенные символы'
+            )
         return value
 
     class Meta:
@@ -30,7 +38,9 @@ class RegisterDataSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(
+        max_length=150
+    )
     confirmation_code = serializers.CharField()
 
 
@@ -129,16 +139,27 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
+        max_length=150,
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ],
         required=True,
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
     )
+
+    def validate_username(self, value):
+        if value.lower() == "me":
+            raise serializers.ValidationError("Username 'me' is not valid")
+        if not re.match(r'^[\w.@+-]+\Z', value):
+            raise ValidationError(
+                'Имя пользователя содержит запрещенные символы'
+            )
+        return value
 
     class Meta:
         fields = ("username", "email", "first_name",
