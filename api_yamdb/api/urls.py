@@ -5,7 +5,7 @@ from .views import CategoryViewSet, GenreViewSet, TitleViewSet
 from .views import ReviewViewSet, CommentViewSet, UserViewSet
 from .views import get_jwt_token, register
 
-router = DefaultRouter()
+
 v1_router = DefaultRouter()
 v1_router.register('categories', CategoryViewSet, basename='categories')
 v1_router.register('genres', GenreViewSet, basename='genres')
@@ -20,7 +20,7 @@ v1_router.register(
     CommentViewSet,
     basename='comments',
 )
-v1_router.register(r"users", UserViewSet)
+v1_router.register(r'users', UserViewSet)
 
 app_name = 'api'
 
