@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
+from django.db import IntegrityError
 
 from reviews.models import Category, Genre, Title, User, Review
 from .permissions import IsAdminOrReadOnly, IsAdmin
@@ -26,11 +27,10 @@ from .filters import TitleFilter
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data["username"]
-    )
+    try:
+        user, created = User.objects.get_or_create(**serializer.validated_data)
+    except IntegrityError:
+        raise serializers.ValidationError('Не правильный email или username!')
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         subject="YaMDb registration",
@@ -152,6 +152,7 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
     http_method_names = ['get', 'post', 'patch', 'delete']
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
     @action(

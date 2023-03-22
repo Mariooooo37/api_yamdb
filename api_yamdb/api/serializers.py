@@ -1,27 +1,17 @@
 import datetime as dt
 import re
-from django.forms import ValidationError
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
+from django.forms import ValidationError
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
 
 
 class RegisterDataSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=150,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-    email = serializers.EmailField(
-        max_length=254,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField(max_length=254)
 
     def validate_username(self, value):
         if value.lower() == "me":
@@ -105,12 +95,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     title = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name',
-        # убрал дефолтные значения для author и title, по идее, мы их должны
-        # прописывать, только если у нас есть кастомная валидация по этим полям
-        # в сериализаторе.
-        # а обычную валидацию из коробки оно пройдет, т.к. read_only они оба
-        # а вьюха значения этих полей уже подсунет после валидации
-        # короче, по сути я валидацию перенес во вьюху для Review, глянь там
     )
 
     def validate_score(self, value):
@@ -178,8 +162,7 @@ class UserEditSerializer(serializers.ModelSerializer):
                 'Имя пользователя содержит запрещенные символы'
             )
         return value
-    
-    
+
     class Meta:
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
