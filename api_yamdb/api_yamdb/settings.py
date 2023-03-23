@@ -27,9 +27,10 @@ INSTALLED_APPS = [
     'django_filters',
     'api',
     'reviews',
+    'user',
 ]
 
-AUTH_USER_MODEL = 'reviews.User'
+AUTH_USER_MODEL = 'user.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
