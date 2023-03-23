@@ -6,7 +6,8 @@ from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 from django.forms import ValidationError
 
-from reviews.models import Category, Genre, Title, Review, Comment, User
+from reviews.models import Category, Genre, Title, Review, Comment
+from user.models import User
 
 MIN_SCORE = 0
 MAX_SCORE = 10
@@ -28,6 +29,36 @@ class RegisterDataSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ("username", "email")
         model = User
+
+
+class UserSerializer(RegisterDataSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ],
+        required=True,
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ]
+    )
+
+    class Meta:
+        fields = ("username", "email", "first_name",
+                  "last_name", "bio", "role")
+        model = User
+
+
+class UserEditSerializer(RegisterDataSerializer):
+
+    class Meta:
+        fields = ("username", "email", "first_name",
+                  "last_name", "bio", "role")
+        model = User
+        read_only_fields = ('role',)
 
 
 class TokenSerializer(serializers.Serializer):
@@ -123,51 +154,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
-
-
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=150,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ],
-        required=True,
-    )
-    email = serializers.EmailField(
-        max_length=254,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-
-    def validate_username(self, value):
-        if value.lower() == "me":
-            raise serializers.ValidationError("Username 'me' is not valid")
-        if not re.match(r'^[\w.@+-]+\Z', value):
-            raise ValidationError(
-                'Имя пользователя содержит запрещенные символы'
-            )
-        return value
-
-    class Meta:
-        fields = ("username", "email", "first_name",
-                  "last_name", "bio", "role")
-        model = User
-
-
-class UserEditSerializer(serializers.ModelSerializer):
-
-    def validate_username(self, value):
-        if value.lower() == "me":
-            raise serializers.ValidationError("Username 'me' is not valid")
-        if not re.match(r'^[\w.@+-]+\Z', value):
-            raise ValidationError(
-                'Имя пользователя содержит запрещенные символы'
-            )
-        return value
-
-    class Meta:
-        fields = ("username", "email", "first_name",
-                  "last_name", "bio", "role")
-        model = User
-        read_only_fields = ('role',)

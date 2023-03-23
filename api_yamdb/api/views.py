@@ -12,7 +12,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 from django.db import IntegrityError
 
-from reviews.models import Category, Genre, Title, User, Review
+from reviews.models import Category, Genre, Title, Review
+from user.models import User
 from .permissions import IsAdminOrReadOnly, IsAdmin
 from .permissions import IsAdminModeratorOwnerOrReadOnly
 from .serializers import RegisterDataSerializer, TokenSerializer
