@@ -1,15 +1,20 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 
+COMMANDS = [
+    'load_users',
+    'load_category',
+    'load_genres',
+    'load_titles',
+    'load_genre_title',
+    'load_reviews',
+    'load_comments'
+]
+
 
 class Command(BaseCommand):
     help = 'Загрузка всей базы данных'
 
     def handle(self, *args, **kwargs):
-        call_command('load_users')
-        call_command('load_category')
-        call_command('load_genres')
-        call_command('load_titles')
-        call_command('load_genre_title')
-        call_command('load_reviews')
-        call_command('load_comments')
+        for command in COMMANDS:
+            call_command(command)
