@@ -3,10 +3,11 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets, mixins, filters
 from rest_framework import serializers
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 from django.db import IntegrityError
@@ -22,75 +23,73 @@ from .serializers import ReviewSerializer, CommentSerializer
 from .filters import TitleFilter
 
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def register(request):
-    serializer = RegisterDataSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    try:
-        user, created = User.objects.get_or_create(**serializer.validated_data)
-    except IntegrityError:
-        raise serializers.ValidationError('Не правильный email или username!')
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        subject="YaMDb registration",
-        message=f"Your confirmation code: {confirmation_code}",
-        from_email=None,
-        recipient_list=[user.email],
-    )
+class RegisterView(APIView):
+    permission_classes = (permissions.AllowAny, )
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    def post(self, request):
+        serializer = RegisterDataSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user, created = User.objects.get_or_create(
+                **serializer.validated_data)
+        except IntegrityError:
+            raise serializers.ValidationError(
+                'Не правильный email или username!')
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            subject="YaMDb registration",
+            message=f"Your confirmation code: {confirmation_code}",
+            from_email=None,
+            recipient_list=[user.email],
+        )
 
-
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def get_jwt_token(request):
-    serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data['username']
-    )
-
-    if default_token_generator.check_token(
-        user, serializer.validated_data["confirmation_code"]
-    ):
-        token = AccessToken.for_user(user)
-        return Response({"token": str(token)}, status=status.HTTP_200_OK)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
-                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class JWTTokenView(APIView):
+    permission_classes = (permissions.AllowAny, )
+
+    def post(self, request):
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            User,
+            username=serializer.validated_data['username']
+        )
+
+        if default_token_generator.check_token(
+            user, serializer.validated_data["confirmation_code"]
+        ):
+            token = AccessToken.for_user(user)
+            return Response({"token": str(token)}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MixinsViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                    mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    permission_classes = (IsAdminOrReadOnly,)
+
+
+class CategoryViewSet(MixinsViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    lookup_field = 'slug'
-    lookup_url_kwarg = 'slug'
-    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('name',)
-    ordering = ('name')
-    permission_classes = (IsAdminOrReadOnly,)
 
 
-class GenreViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
-                   mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class GenreViewSet(MixinsViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    lookup_field = 'slug'
-    lookup_url_kwarg = 'slug'
-    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('name',)
-    ordering = ('name')
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.OrderingFilter, DjangoFilterBackend)
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    ordering = ('name')
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
