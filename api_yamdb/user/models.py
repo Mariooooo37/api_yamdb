@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    
+
     class Roles(models.TextChoices):
         ADMIN = 'admin'
         MODERATOR = 'moderator'
@@ -12,7 +12,8 @@ class User(AbstractUser):
 
     email = models.EmailField(
         unique=True,
-    ) # в AbstractUser поле email не уникальное
+    )
+    # в AbstractUser поле email не уникальное
     role = models.CharField(
         verbose_name='Роль',
         max_length=50,
