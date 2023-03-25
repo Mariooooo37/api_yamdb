@@ -1,11 +1,12 @@
 from django.db import models
 
 from user.models import User
+from api.validators import validate_year
 
 
 class Genre(models.Model):
-    name = models.CharField('Жанр', max_length=256)
-    slug = models.SlugField('Slug', max_length=50, unique=True)
+    name = models.CharField(verbose_name='Жанр', max_length=256)
+    slug = models.SlugField(verbose_name='Slug', max_length=50, unique=True)
 
     class Meta:
         ordering = ['name']
@@ -17,8 +18,8 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField('Категория', max_length=256)
-    slug = models.SlugField('Slug', max_length=50, unique=True)
+    name = models.CharField(verbose_name='Категория', max_length=256)
+    slug = models.SlugField(verbose_name='Slug', max_length=50, unique=True)
 
     class Meta:
         ordering = ['name']
@@ -30,16 +31,18 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.TextField('Имя', max_length=256, db_index=True)
-    year = models.IntegerField('Год')
-    # Валидация года реализованна в сериалайзере
-    rating = models.IntegerField('Рейтинг', default=0)
-    description = models.TextField('Описание', null=True, blank=True)
+    name = models.TextField(verbose_name='Имя', max_length=256, db_index=True)
+    year = models.IntegerField(
+        verbose_name='Год', db_index=True, validators=(validate_year, ))
+    rating = models.IntegerField(verbose_name='Рейтинг', default=0)
+    description = models.TextField(
+        verbose_name='Описание', null=True, blank=True)
     genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
-        verbose_name='Жанр',
         blank=True,
+        verbose_name='Жанр',
+        # В полях ManyToManyField null=True по умолчанию)
     )
     category = models.ForeignKey(
         Category,
@@ -118,14 +121,15 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Отзыв',
     )
-    text = models.TextField('Текст')
+    text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='review_comments',
         verbose_name='Автор',
     )
-    pub_date = models.DateTimeField('Дата комментария', auto_now_add=True)
+    pub_date = models.DateTimeField(
+        verbose_name='Дата комментария', auto_now_add=True)
 
     class Meta:
         verbose_name = 'Комментарий'

@@ -11,9 +11,9 @@ class User(AbstractUser):
         USER = 'user'
 
     email = models.EmailField(
+        verbose_name='Email',
         unique=True,
     )
-    # в AbstractUser поле email не уникальное
     role = models.CharField(
         verbose_name='Роль',
         max_length=50,
