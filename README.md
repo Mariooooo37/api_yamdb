@@ -128,22 +128,12 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-Загрузка всей тестовой базы данных:
+Загрузка тестовой базы данных:
 
 ```
 python manage.py load_all_db
 ```
-Выборочная загрузка тестовой базы данных:
 
-```
-python manage.py load_users
-python manage.py load_category
-python manage.py load_genres
-python manage.py load_titles
-python manage.py load_genre_title
-python manage.py load_reviews
-python manage.py load_comments
-```
 Запустить проект:
 
 ```

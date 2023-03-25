@@ -1,4 +1,3 @@
-import datetime as dt
 import re
 
 from rest_framework import serializers
@@ -108,13 +107,6 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         required=False,
     )
     rating = serializers.IntegerField(read_only=True)
-
-    def validate_year(self, value):
-        year = dt.date.today().year
-        if value > year:
-            raise serializers.ValidationError(
-                'Год выпуска не может быть больше текущего года!')
-        return value
 
     class Meta:
         model = Title
