@@ -97,7 +97,7 @@ http://127.0.0.1:8000/redoc/
 Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git clone git@github.com:avfedchenko/api_yamdb.git
+git clone git@github.com:Mariooooo37/api_yamdb.git
 ```
 
 ```
