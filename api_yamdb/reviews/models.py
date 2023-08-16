@@ -42,7 +42,6 @@ class Title(models.Model):
         through='GenreTitle',
         blank=True,
         verbose_name='Жанр',
-        # В полях ManyToManyField null=True по умолчанию)
     )
     category = models.ForeignKey(
         Category,
